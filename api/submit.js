@@ -10,44 +10,53 @@ export default async function handler(req, res) {
   const WIX_SITE_ID = "455c12fa-d597-4a3e-ba87-1e6c51e493e8";
   const WIX_MEMBER_ID = "8d73c658-0c76-43f5-bf3b-617eb02000f7";
 
+  const headers = {
+    "Content-Type": "application/json",
+    "Authorization": WIX_API_KEY,
+    "wix-site-id": WIX_SITE_ID,
+  };
+
   try {
     const incoming = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
 
-    // Inject memberId into the draftPost
     const payload = {
-  draftPost: {
-    memberId: WIX_MEMBER_ID,
-    title: incoming.draftPost.title,
-    excerpt: incoming.draftPost.excerpt,
-    categoryIds: incoming.draftPost.categoryIds,
-    tagIds: incoming.draftPost.tagIds,
-    richContent: incoming.draftPost.richContent,
-    status: "IN_REVIEW",
-  }
-};
+      draftPost: {
+        memberId: WIX_MEMBER_ID,
+        title: incoming.draftPost.title,
+        excerpt: incoming.draftPost.excerpt,
+        categoryIds: incoming.draftPost.categoryIds,
+        tagIds: incoming.draftPost.tagIds,
+        richContent: incoming.draftPost.richContent,
+      }
+    };
 
-    const response = await fetch("https://www.wixapis.com/blog/v3/draft-posts", {
+    // Step 1 — create the draft
+    const createRes = await fetch("https://www.wixapis.com/blog/v3/draft-posts", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": WIX_API_KEY,
-        "wix-site-id": WIX_SITE_ID,
-      },
+      headers,
       body: JSON.stringify(payload),
     });
 
-    const text = await response.text();
-    let data;
-    try { data = JSON.parse(text); } catch { data = { raw: text }; }
-
-    if (!response.ok) {
-      console.error("Wix API error:", response.status, text);
-      return res.status(response.status).json({ error: "Wix rejected the request", details: data });
+    const createData = await createRes.json();
+    if (!createRes.ok) {
+      return res.status(createRes.status).json({ error: "Failed to create draft", details: createData });
     }
 
-    return res.status(200).json(data);
+    const postId = createData.draftPost.id;
+
+    // Step 2 — submit for review
+    const submitRes = await fetch(`https://www.wixapis.com/blog/v3/draft-posts/${postId}/submit`, {
+      method: "POST",
+      headers,
+    });
+
+    const submitData = await submitRes.json();
+    if (!submitRes.ok) {
+      return res.status(submitRes.status).json({ error: "Created but failed to submit for review", details: submitData });
+    }
+
+    return res.status(200).json(submitData);
   } catch (error) {
-    console.error("Submit error:", error);
-    return res.status(500).json({ error: "Failed to submit to Wix", details: error.message });
+    return res.status(500).json({ error: "Server error", details: error.message });
   }
 }
