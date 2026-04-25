@@ -6,7 +6,6 @@ const SUPABASE_KEY = "sb_publishable_wOYMShmjRqJO7GjJnUbqQw_k_dY_rtD";
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const ADMIN_EMAIL = "contact.arcwize@gmail.com";
-const WIX_SITE_ID = "455c12fa-d597-4a3e-ba87-1e6c51e493e8";
 
 const FALLBACK_CATEGORIES = [
   { id: "222c471d-1e83-467b-a38e-2d3beec8bde0", label: "US Politics" },
@@ -50,22 +49,32 @@ const css = `
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap');
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --cream: #f5f0e8; --cream-dark: #ede6d6; --dark: #1a1410; --dark-mid: #2c2318;
-    --sidebar-bg: #1c1710; --gold: #c4985a; --gold-light: #d4aa72; --white: #ffffff;
-    --text: #2a2018; --mid: #7a6e60; --light: #b8a898; --rule: #ddd5c4; --red: #b04040;
+    --white: #ffffff;
+    --dark: #0a0a0a;
+    --dark-mid: #1a1a1a;
+    --sidebar-bg: #111111;
+    --gold: #c4985a;
+    --gold-light: #d4aa72;
+    --text: #1a1a1a;
+    --mid: #666666;
+    --light: #aaaaaa;
+    --rule: #e0e0e0;
+    --red: #b04040;
+    --cream-dark: #f5f5f5;
   }
   html, body, #root { height: 100%; }
-  body { font-family: 'Jost', sans-serif; background: var(--cream); color: var(--text); -webkit-font-smoothing: antialiased; }
+  body { font-family: 'Jost', sans-serif; background: var(--white); color: var(--text); -webkit-font-smoothing: antialiased; }
 
-  .login-page { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; background: var(--cream); }
-  .login-left { background: var(--cream); padding: 4rem; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid var(--rule); }
+  /* LOGIN */
+  .login-page { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; background: var(--white); }
+  .login-left { background: var(--white); padding: 4rem; display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid var(--rule); }
   .login-logo { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 600; letter-spacing: 0.08em; color: var(--dark); text-transform: uppercase; line-height: 1; }
   .login-logo-sub { font-size: 0.65rem; font-weight: 500; letter-spacing: 0.35em; text-transform: uppercase; color: var(--mid); margin-top: 0.5rem; }
   .login-left-rule { width: 40px; height: 2px; background: var(--gold); margin: 2rem 0; }
   .login-left-headline { font-family: 'Cormorant Garamond', serif; font-size: 4.5rem; font-weight: 300; line-height: 1.05; color: var(--dark); }
   .login-left-tagline { font-size: 0.65rem; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mid); margin-top: 1.5rem; line-height: 1.8; }
   .login-left-footer { font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--light); }
-  .login-right { display: flex; align-items: center; justify-content: center; padding: 4rem; }
+  .login-right { display: flex; align-items: center; justify-content: center; padding: 4rem; background: var(--white); }
   .login-form-wrap { width: 100%; max-width: 420px; }
   .login-a-mark { font-family: 'Cormorant Garamond', serif; font-size: 5rem; font-weight: 300; color: var(--dark); text-align: center; line-height: 1; margin-bottom: 0.25rem; }
   .login-a-rule { width: 60px; height: 1px; background: var(--dark); margin: 0 auto 2rem; }
@@ -86,7 +95,8 @@ const css = `
   .back-link { background: none; border: none; font-size: 0.62rem; font-weight: 500; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid); cursor: pointer; margin-top: 1rem; display: block; text-align: center; }
   .back-link:hover { color: var(--dark); }
 
-  .shell { min-height: 100vh; display: flex; }
+  /* SHELL */
+  .shell { min-height: 100vh; display: flex; background: var(--white); }
   .sidebar { width: 260px; min-height: 100vh; background: var(--sidebar-bg); display: flex; flex-direction: column; padding: 2.5rem 0; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
   .sidebar-logo { padding: 0 2rem; }
   .sidebar-wordmark { font-family: 'Cormorant Garamond', serif; font-size: 1.6rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--white); line-height: 1; }
@@ -106,11 +116,13 @@ const css = `
   .logout-btn { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; margin: 1rem 1rem 0; border-radius: 4px; font-size: 0.68rem; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(255,255,255,0.35); cursor: pointer; background: none; border: none; width: calc(100% - 2rem); text-align: left; transition: all 0.15s; }
   .logout-btn:hover { color: rgba(255,255,255,0.7); }
 
-  .main { margin-left: 260px; flex: 1; min-height: 100vh; background: var(--cream); }
-  .topbar { background: var(--cream); border-bottom: 1px solid var(--rule); padding: 1.25rem 2.5rem; display: flex; align-items: center; justify-content: flex-end; gap: 1rem; }
+  /* MAIN */
+  .main { margin-left: 260px; flex: 1; min-height: 100vh; background: var(--white); }
+  .topbar { background: var(--white); border-bottom: 1px solid var(--rule); padding: 1.25rem 2.5rem; display: flex; align-items: center; justify-content: flex-end; gap: 1rem; }
   .topbar-greeting { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: var(--mid); }
   .topbar-avatar { width: 36px; height: 36px; border-radius: 50%; background: var(--dark); color: var(--white); display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
 
+  /* PAGE */
   .page { padding: 2.5rem; }
   .page-title-row { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; }
   .page-title { font-family: 'Cormorant Garamond', serif; font-size: 2.8rem; font-weight: 400; color: var(--dark); line-height: 1; margin-bottom: 0.4rem; }
@@ -118,38 +130,44 @@ const css = `
   .btn-create { display: flex; align-items: center; gap: 0.6rem; padding: 0.85rem 1.75rem; background: var(--dark); color: var(--white); border: none; font-family: 'Jost', sans-serif; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: background 0.2s; border-radius: 2px; white-space: nowrap; }
   .btn-create:hover { background: var(--dark-mid); }
 
-  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
-  .stat-card { background: var(--white); border: 1px solid var(--rule); border-radius: 4px; padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem; }
-  .stat-icon { width: 48px; height: 48px; border-radius: 50%; background: var(--cream-dark); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+  /* STAT CARDS */
+  .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
+  .stat-card { background: var(--white); border: 1px solid var(--rule); border-radius: 4px; padding: 1.5rem; display: flex; align-items: center; gap: 1.25rem; cursor: pointer; transition: border-color 0.15s; }
+  .stat-card:hover { border-color: var(--dark); }
+  .stat-icon { width: 48px; height: 48px; border-radius: 50%; background: #f5f5f5; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
   .stat-label { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid); margin-bottom: 0.3rem; }
   .stat-num { font-family: 'Cormorant Garamond', serif; font-size: 2.5rem; font-weight: 400; color: var(--dark); line-height: 1; }
+  .stat-link { font-size: 0.62rem; color: var(--gold); font-weight: 500; letter-spacing: 0.08em; margin-top: 0.3rem; display: block; }
 
+  /* TABLE */
   .table-wrap { background: var(--white); border: 1px solid var(--rule); border-radius: 4px; }
   .table-header { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid var(--rule); flex-wrap: wrap; gap: 1rem; }
   .table-tabs { display: flex; }
   .table-tab { font-size: 0.68rem; font-weight: 500; letter-spacing: 0.1em; color: var(--mid); background: none; border: none; border-bottom: 2px solid transparent; padding: 0.5rem 1rem; cursor: pointer; transition: all 0.15s; }
   .table-tab.active { color: var(--dark); border-bottom-color: var(--gold); }
-  .table-search { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.85rem; border: 1px solid var(--rule); border-radius: 2px; background: var(--cream); }
+  .table-search { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.85rem; border: 1px solid var(--rule); border-radius: 2px; background: var(--white); }
   .table-search input { border: none; background: transparent; font-family: 'Jost', sans-serif; font-size: 0.8rem; color: var(--text); outline: none; width: 180px; }
   .table-search input::placeholder { color: var(--light); }
-  .table-cols { display: grid; grid-template-columns: 1fr 120px 160px 80px; padding: 0.6rem 1.5rem; border-bottom: 1px solid var(--rule); background: var(--cream); }
+  .table-cols { display: grid; grid-template-columns: 1fr 120px 160px 80px; padding: 0.6rem 1.5rem; border-bottom: 1px solid var(--rule); background: #f9f9f9; }
   .col-head { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mid); }
-  .article-row-item { display: grid; grid-template-columns: 1fr 120px 160px 80px; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--rule); transition: background 0.15s; }
+  .article-row-item { display: grid; grid-template-columns: 1fr 120px 160px 80px; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--rule); transition: background 0.15s; cursor: pointer; }
   .article-row-item:last-child { border-bottom: none; }
-  .article-row-item:hover { background: var(--cream); }
+  .article-row-item:hover { background: #f9f9f9; }
   .article-thumb-row { display: flex; align-items: center; gap: 1rem; }
-  .article-thumb { width: 56px; height: 40px; border-radius: 2px; object-fit: cover; background: var(--cream-dark); flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--light); font-family: 'Cormorant Garamond', serif; overflow: hidden; }
+  .article-thumb { width: 56px; height: 40px; border-radius: 2px; background: #f0f0f0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: var(--light); overflow: hidden; }
+  .article-thumb img { width: 100%; height: 100%; object-fit: cover; }
   .article-title-cell { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-weight: 500; color: var(--dark); margin-bottom: 0.15rem; line-height: 1.3; }
   .article-cat { font-size: 0.6rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid); }
   .status-badge { display: inline-block; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.3rem 0.7rem; border-radius: 2px; }
   .badge-submitted { background: #e8f5ee; color: #2d6a4f; }
-  .badge-draft { background: var(--cream-dark); color: var(--mid); }
+  .badge-draft { background: #f0f0f0; color: var(--mid); }
   .date-cell { font-size: 0.72rem; color: var(--mid); }
   .actions-cell { display: flex; align-items: center; gap: 0.75rem; }
   .action-btn { background: none; border: none; cursor: pointer; color: var(--light); font-size: 1rem; transition: color 0.15s; padding: 0; }
   .action-btn:hover { color: var(--dark); }
   .empty-row { padding: 4rem; text-align: center; font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; font-style: italic; color: var(--light); }
 
+  /* NOTIFICATIONS */
   .notif-list { display: flex; flex-direction: column; gap: 1rem; }
   .notif-item { background: var(--white); border: 1px solid var(--rule); border-radius: 4px; padding: 1.25rem 1.5rem; display: flex; gap: 1rem; align-items: flex-start; cursor: pointer; }
   .notif-item.unread { border-left: 3px solid var(--gold); }
@@ -158,11 +176,13 @@ const css = `
   .notif-body { font-size: 0.78rem; color: var(--mid); line-height: 1.5; margin-bottom: 0.4rem; }
   .notif-time { font-size: 0.62rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--light); }
 
+  /* ADMIN */
   .admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; margin-bottom: 2rem; }
   .admin-stat { background: var(--white); border: 1px solid var(--rule); border-radius: 4px; padding: 1.5rem; }
   .admin-stat-num { font-family: 'Cormorant Garamond', serif; font-size: 2.8rem; font-weight: 300; color: var(--dark); line-height: 1; margin-bottom: 0.4rem; }
   .admin-stat-label { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mid); }
 
+  /* EDITOR */
   .editor-page { max-width: 820px; margin: 0 auto; }
   .editor-back { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid); background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 2rem; display: flex; align-items: center; gap: 0.5rem; transition: color 0.15s; }
   .editor-back:hover { color: var(--dark); }
@@ -171,35 +191,91 @@ const css = `
   .editor-title:focus { border-bottom-color: var(--gold); }
   .editor-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 2rem 0; padding-bottom: 2rem; border-bottom: 1px solid var(--rule); }
   .meta-label { display: block; font-size: 0.6rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mid); margin-bottom: 0.6rem; }
-  .meta-select { width: 100%; padding: 0.7rem 0.85rem; background: var(--white); border: 1px solid var(--rule); font-family: 'Jost', sans-serif; font-size: 0.88rem; color: var(--text); outline: none; appearance: none; cursor: pointer; transition: border-color 0.2s; border-radius: 2px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a6e60'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.85rem center; }
+  .meta-select { width: 100%; padding: 0.7rem 0.85rem; background: var(--white); border: 1px solid var(--rule); font-family: 'Jost', sans-serif; font-size: 0.88rem; color: var(--text); outline: none; appearance: none; cursor: pointer; transition: border-color 0.2s; border-radius: 2px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 0.85rem center; }
   .meta-select:focus { border-color: var(--gold); }
   .meta-textarea { width: 100%; padding: 0.7rem 0.85rem; background: var(--white); border: 1px solid var(--rule); font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: var(--text); outline: none; resize: none; min-height: 58px; transition: border-color 0.2s; line-height: 1.6; border-radius: 2px; }
   .meta-textarea::placeholder { color: var(--light); }
   .meta-textarea:focus { border-color: var(--gold); }
 
+  /* TAGS */
   .tags-wrap { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--rule); }
   .tags-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; }
   .tag-chip { font-size: 0.58rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.35rem 0.8rem; border: 1px solid var(--rule); background: var(--white); color: var(--mid); cursor: pointer; transition: all 0.15s; border-radius: 2px; }
   .tag-chip:hover { border-color: var(--gold); color: var(--dark); }
   .tag-chip.on { background: var(--dark); color: var(--white); border-color: var(--dark); }
 
-  .cover-wrap { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--rule); }
-  .cover-drop { border: 1px dashed var(--rule); border-radius: 4px; padding: 2rem; text-align: center; cursor: pointer; transition: border-color 0.2s; margin-top: 0.6rem; position: relative; }
-  .cover-drop:hover { border-color: var(--gold); }
-  .cover-drop input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-  .cover-drop-label { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: var(--mid); display: block; }
-  .cover-drop-sub { font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--light); margin-top: 0.3rem; display: block; }
-  .cover-preview { width: 100%; max-height: 220px; object-fit: cover; border-radius: 2px; display: block; }
-  .cover-remove { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--mid); background: none; border: none; cursor: pointer; margin-top: 0.6rem; padding: 0; transition: color 0.15s; }
-  .cover-remove:hover { color: var(--red); }
-
-  .toolbar { display: flex; align-items: center; padding: 0.6rem 0; border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); flex-wrap: wrap; row-gap: 0.3rem; background: var(--cream); margin-bottom: 0; }
-  .tb { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.06em; color: var(--mid); background: none; border: none; padding: 0.3rem 0.65rem; cursor: pointer; transition: color 0.15s; text-transform: uppercase; }
-  .tb:hover { color: var(--dark); }
+  /* TOOLBAR */
+  .toolbar { display: flex; align-items: center; padding: 0.6rem 0.5rem; border: 1px solid var(--rule); border-bottom: none; flex-wrap: wrap; row-gap: 0.3rem; background: #f9f9f9; border-radius: 2px 2px 0 0; }
+  .tb { font-size: 0.65rem; font-weight: 600; letter-spacing: 0.06em; color: var(--mid); background: none; border: none; padding: 0.3rem 0.65rem; cursor: pointer; transition: color 0.15s; text-transform: uppercase; border-radius: 2px; }
+  .tb:hover { color: var(--dark); background: rgba(0,0,0,0.05); }
   .tb-sep { width: 1px; height: 14px; background: var(--rule); margin: 0 0.2rem; flex-shrink: 0; }
-  .body-editor { width: 100%; min-height: 500px; font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: var(--text); line-height: 1.9; border: 1px solid var(--rule); border-top: none; background: var(--white); outline: none; padding: 1.5rem; }
+
+  /* BODY EDITOR */
+  .body-editor {
+    width: 100%;
+    min-height: 500px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.2rem;
+    color: var(--text);
+    line-height: 1.9;
+    border: 1px solid var(--rule);
+    background: var(--white);
+    outline: none;
+    padding: 1.5rem;
+    border-radius: 0 0 2px 2px;
+  }
   .body-editor:empty::before { content: attr(data-ph); color: var(--light); font-style: italic; pointer-events: none; }
-  .body-editor img { max-width: 100%; height: auto; border-radius: 2px; margin: 1rem 0; display: block; }
+
+  /* INLINE IMAGE STYLES — fixed sizing, no blue line */
+  .body-editor img {
+    max-width: 100%;
+    width: auto;
+    height: auto;
+    display: block;
+    margin: 1rem 0;
+    border-radius: 2px;
+    line-height: 0;
+    vertical-align: top;
+  }
+
+  /* TWO & THREE COLUMN DIVIDERS */
+  .body-editor .col-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    border: 1px dashed var(--rule);
+    border-radius: 2px;
+  }
+  .body-editor .col-3 {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    border: 1px dashed var(--rule);
+    border-radius: 2px;
+  }
+  .col-placeholder {
+    min-height: 80px;
+    background: #f9f9f9;
+    border: 1px dashed var(--rule);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--light);
+    font-size: 0.9rem;
+    cursor: text;
+    outline: none;
+    padding: 0.75rem;
+    min-width: 0;
+  }
+  .col-placeholder:empty::before { content: 'Write here...'; pointer-events: none; }
+  .col-placeholder:focus { border-color: var(--gold); background: var(--white); }
 
   .editor-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 1.5rem; border-top: 1px solid var(--rule); margin-top: 1rem; }
   .word-count { font-size: 0.62rem; font-weight: 600; letter-spacing: 0.15em; text-transform: uppercase; color: var(--light); }
@@ -210,11 +286,11 @@ const css = `
   .btn-submit:hover { background: var(--dark-mid); }
   .btn-submit:disabled { opacity: 0.3; cursor: not-allowed; }
 
-  .loading-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; background: var(--cream); }
+  /* LOADING & TOAST */
+  .loading-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 1rem; background: var(--white); }
   .loading-mark { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 300; color: var(--dark); }
   .loading-sub { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.25em; text-transform: uppercase; color: var(--light); }
-
-  .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--dark); color: var(--white); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; padding: 1rem 1.5rem; border-left: 3px solid var(--gold); z-index: 9999; animation: fadeUp 0.25s ease; display: flex; align-items: center; gap: 0.75rem; max-width: 360px; border-radius: 2px; box-shadow: 0 8px 32px rgba(0,0,0,0.25); }
+  .toast { position: fixed; bottom: 2rem; right: 2rem; background: var(--dark); color: var(--white); font-size: 0.72rem; font-weight: 500; letter-spacing: 0.08em; padding: 1rem 1.5rem; border-left: 3px solid var(--gold); z-index: 9999; animation: fadeUp 0.25s ease; display: flex; align-items: center; gap: 0.75rem; max-width: 360px; border-radius: 2px; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
   .toast.err { border-left-color: var(--red); }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -228,6 +304,7 @@ const css = `
     .editor-meta { grid-template-columns: 1fr; }
     .table-cols, .article-row-item { grid-template-columns: 1fr auto; }
     .date-cell { display: none; }
+    .body-editor .col-2, .body-editor .col-3 { grid-template-columns: 1fr; }
   }
 `;
 
@@ -353,8 +430,8 @@ function Sidebar({ tab, setTab, isAdmin, onLogout, unread }) {
   );
 }
 
-function ArticleTable({ articles, categories, onEdit }) {
-  const [activeTab, setActiveTab] = useState("all");
+function ArticleTable({ articles, categories, onEdit, initialTab }) {
+  const [activeTab, setActiveTab] = useState(initialTab || "all");
   const [search, setSearch] = useState("");
 
   const filtered = articles
@@ -383,10 +460,10 @@ function ArticleTable({ articles, categories, onEdit }) {
       {filtered.length === 0
         ? <div className="empty-row">No articles here yet.</div>
         : filtered.map(a => (
-          <div key={a.id} className="article-row-item">
+          <div key={a.id} className="article-row-item" onClick={() => a.status === "draft" && onEdit(a)}>
             <div className="article-thumb-row">
               <div className="article-thumb">
-                {a.cover_url ? <img src={a.cover_url} alt="" style={{width:"100%",height:"100%",objectFit:"cover"}} /> : "A"}
+                {a.cover_url ? <img src={a.cover_url} alt="" /> : "A"}
               </div>
               <div>
                 <div className="article-title-cell">{a.title || "Untitled Draft"}</div>
@@ -395,7 +472,7 @@ function ArticleTable({ articles, categories, onEdit }) {
             </div>
             <div><span className={`status-badge ${a.status==="submitted"?"badge-submitted":"badge-draft"}`}>{a.status==="submitted"?"Submitted":"Draft"}</span></div>
             <div className="date-cell">{a.updated_at ? fmt(a.updated_at) : "—"}</div>
-            <div className="actions-cell">
+            <div className="actions-cell" onClick={e => e.stopPropagation()}>
               {a.status === "draft" && <button className="action-btn" title="Edit" onClick={() => onEdit(a)}>✏️</button>}
             </div>
           </div>
@@ -406,6 +483,7 @@ function ArticleTable({ articles, categories, onEdit }) {
 }
 
 function InternDashboard({ user, articles, categories, onNew, onEdit }) {
+  const [tableTab, setTableTab] = useState("all");
   const submitted = articles.filter(a => a.status === "submitted");
   const drafts = articles.filter(a => a.status === "draft");
   return (
@@ -418,16 +496,29 @@ function InternDashboard({ user, articles, categories, onNew, onEdit }) {
         <button className="btn-create" onClick={onNew}>+ Create New Article</button>
       </div>
       <div className="stats-row">
-        <div className="stat-card"><div className="stat-icon">↗</div><div><div className="stat-label">Submitted Articles</div><div className="stat-num">{submitted.length}</div></div></div>
-        <div className="stat-card"><div className="stat-icon">◷</div><div><div className="stat-label">Pending Reviews</div><div className="stat-num">{submitted.length}</div></div></div>
-        <div className="stat-card"><div className="stat-icon">✏</div><div><div className="stat-label">Drafts</div><div className="stat-num">{drafts.length}</div></div></div>
+        <div className="stat-card" onClick={() => setTableTab("submitted")}>
+          <div className="stat-icon">↗</div>
+          <div>
+            <div className="stat-label">Submitted Articles</div>
+            <div className="stat-num">{submitted.length}</div>
+            <span className="stat-link">View all submitted →</span>
+          </div>
+        </div>
+        <div className="stat-card" onClick={() => setTableTab("draft")}>
+          <div className="stat-icon">✏</div>
+          <div>
+            <div className="stat-label">Drafts</div>
+            <div className="stat-num">{drafts.length}</div>
+            <span className="stat-link">View all drafts →</span>
+          </div>
+        </div>
       </div>
-      <ArticleTable articles={articles} categories={categories} onEdit={onEdit} />
+      <ArticleTable articles={articles} categories={categories} onEdit={onEdit} initialTab={tableTab} key={tableTab} />
     </div>
   );
 }
 
-function AdminDashboard({ articles, categories }) {
+function AdminDashboard({ articles, categories, onEdit }) {
   const submitted = articles.filter(a => a.status === "submitted");
   const drafts = articles.filter(a => a.status === "draft");
   const totalWords = articles.reduce((s, a) => s + (a.words || 0), 0);
@@ -440,7 +531,7 @@ function AdminDashboard({ articles, categories }) {
         <div className="admin-stat"><div className="admin-stat-num">{drafts.length}</div><div className="admin-stat-label">In Draft</div></div>
         <div className="admin-stat"><div className="admin-stat-num">{totalWords > 999 ? (totalWords/1000).toFixed(1)+"k" : totalWords}</div><div className="admin-stat-label">Total Words</div></div>
       </div>
-      <ArticleTable articles={articles} categories={categories} onEdit={() => {}} />
+      <ArticleTable articles={articles} categories={categories} onEdit={onEdit} />
     </div>
   );
 }
@@ -469,38 +560,51 @@ function Editor({ user, draft, categories, tags, onSave, onSubmit, onBack, notif
   const [excerpt, setExcerpt] = useState(draft?.excerpt || "");
   const [category, setCategory] = useState(draft?.category || "");
   const [selectedTags, setSelectedTagsState] = useState(draft?.tags || []);
-  const [coverFile, setCoverFile] = useState(null);
-  const [coverPreview, setCoverPreview] = useState(draft?.cover_url || null);
   const [bodyText, setBodyText] = useState(draft?.body || "");
   const [submitting, setSubmitting] = useState(false);
   const bodyRef = useRef(null);
   const imageInputRef = useRef(null);
   const words = wc(bodyText);
+
   const exec = (cmd, val = null) => { document.execCommand(cmd, false, val); bodyRef.current?.focus(); };
 
   const toggleTag = id => setSelectedTagsState(prev => prev.includes(id) ? prev.filter(t => t !== id) : prev.length < 5 ? [...prev, id] : prev);
 
-  const handleCover = e => {
-    const f = e.target.files[0];
-    if (f) { setCoverFile(f); setCoverPreview(URL.createObjectURL(f)); }
-  };
-
+  // Inline image — inserted into body
   const handleInlineImage = e => {
     const f = e.target.files[0];
     if (!f) return;
     const reader = new FileReader();
     reader.onload = ev => {
-      const img = `<img src="${ev.target.result}" style="max-width:100%;height:auto;border-radius:2px;margin:1rem 0;" />`;
-      document.execCommand("insertHTML", false, img);
+      // Insert image with controlled styling
       bodyRef.current?.focus();
+      document.execCommand("insertHTML", false,
+        `<img src="${ev.target.result}" style="max-width:500px;width:100%;height:auto;display:block;margin:1rem 0;border-radius:2px;" />`
+      );
     };
     reader.readAsDataURL(f);
     e.target.value = "";
   };
 
-  const uploadCoverToSupabase = async (file) => {
+  // Insert 2-column layout
+  const insert2Col = () => {
+    bodyRef.current?.focus();
+    document.execCommand("insertHTML", false,
+      `<div class="col-2"><div class="col-placeholder" contenteditable="true">Write here...</div><div class="col-placeholder" contenteditable="true">Write here...</div></div><p><br></p>`
+    );
+  };
+
+  // Insert 3-column layout
+  const insert3Col = () => {
+    bodyRef.current?.focus();
+    document.execCommand("insertHTML", false,
+      `<div class="col-3"><div class="col-placeholder" contenteditable="true">Write here...</div><div class="col-placeholder" contenteditable="true">Write here...</div><div class="col-placeholder" contenteditable="true">Write here...</div></div><p><br></p>`
+    );
+  };
+
+  const uploadImageToSupabase = async (file) => {
     const ext = file.name.split(".").pop();
-    const path = `covers/${user.id}/${Date.now()}.${ext}`;
+    const path = `images/${user.id}/${Date.now()}.${ext}`;
     const { error } = await supabase.storage.from("article-images").upload(path, file, { upsert: true });
     if (error) return null;
     const { data } = supabase.storage.from("article-images").getPublicUrl(path);
@@ -508,14 +612,23 @@ function Editor({ user, draft, categories, tags, onSave, onSubmit, onBack, notif
   };
 
   const saveToSupabase = async (status) => {
-    let cover_url = coverPreview;
-    if (coverFile) {
-      const uploaded = await uploadCoverToSupabase(coverFile);
-      if (uploaded) cover_url = uploaded;
-    }
-
     const body = bodyRef.current?.innerHTML || bodyText;
     const plainText = bodyRef.current?.innerText || bodyText;
+
+    // Upload any base64 images to Supabase before saving
+    let processedBody = body;
+    const base64Matches = [...body.matchAll(/src="(data:image\/[^"]+)"/g)];
+    for (const match of base64Matches) {
+      const b64 = match[1];
+      const res = await fetch(b64);
+      const blob = await res.blob();
+      const file = new File([blob], `image-${Date.now()}.jpg`, { type: blob.type });
+      const url = await uploadImageToSupabase(file);
+      if (url) processedBody = processedBody.replace(b64, url);
+    }
+
+    const firstImgMatch = processedBody.match(/src="(https:\/\/[^"]+)"/);
+    const cover_url = firstImgMatch ? firstImgMatch[1] : (draft?.cover_url || null);
 
     const payload = {
       user_id: user.id,
@@ -524,7 +637,7 @@ function Editor({ user, draft, categories, tags, onSave, onSubmit, onBack, notif
       excerpt: excerpt.trim(),
       category,
       tags: selectedTags,
-      body,
+      body: processedBody,
       words: wc(plainText),
       status,
       cover_url,
@@ -557,55 +670,30 @@ function Editor({ user, draft, categories, tags, onSave, onSubmit, onBack, notif
     try {
       const saved = await saveToSupabase("submitted");
 
-      // Extract inline images from body HTML
-      const bodyHTML = bodyRef.current?.innerHTML || bodyText;
-      const imgMatches = [...bodyHTML.matchAll(/<img[^>]+src="([^"]+)"/g)];
-      const inlineImageUrls = imgMatches.map(m => m[1]).filter(u => u.startsWith("http"));
+      const bodyHTML = bodyRef.current?.innerHTML || saved.body || "";
+      const imgMatches = [...bodyHTML.matchAll(/src="(https:\/\/[^"]+)"/g)];
+      const inlineImageUrls = imgMatches.map(m => m[1]);
 
-      // Build rich content nodes - text paragraphs + image nodes
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(bodyHTML, "text/html");
-      const nodes = [];
-
-      doc.body.childNodes.forEach(node => {
-        if (node.nodeName === "IMG") {
-          const src = node.getAttribute("src");
-          if (src) {
-            nodes.push({
-              type: "IMAGE",
-              imageData: {
-                image: { src: { url: src } },
-                containerData: { width: { size: "CONTENT" } }
-              }
-            });
-          }
-        } else {
-          const text = node.textContent?.trim();
-          if (text) {
-            nodes.push({
-              type: "PARAGRAPH",
-              nodes: [{ type: "TEXT", textData: { text } }]
-            });
-          }
-        }
-      });
-
-      const wixPayload = {
-        coverImageUrl: saved.cover_url || null,
-        inlineImageUrls,
-        draftPost: {
-          title: title.trim(),
-          excerpt: excerpt.trim(),
-          categoryIds: [category],
-          tagIds: selectedTags,
-          richContent: { nodes },
-        }
-      };
+      const plainParagraphs = (bodyRef.current?.innerText || bodyText).trim().split(/\n\n+/).filter(Boolean);
+      const nodes = plainParagraphs.map(p => ({
+        type: "PARAGRAPH",
+        nodes: [{ type: "TEXT", textData: { text: p.replace(/<[^>]+>/g, "") } }]
+      }));
 
       await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(wixPayload),
+        body: JSON.stringify({
+          coverImageUrl: inlineImageUrls[0] || null,
+          inlineImageUrls: inlineImageUrls.slice(1),
+          draftPost: {
+            title: title.trim(),
+            excerpt: excerpt.trim(),
+            categoryIds: [category],
+            tagIds: selectedTags,
+            richContent: { nodes },
+          }
+        }),
       });
 
       onSubmit(saved);
@@ -620,6 +708,7 @@ function Editor({ user, draft, categories, tags, onSave, onSubmit, onBack, notif
       <div className="editor-page">
         <button className="editor-back" onClick={onBack}>← Back to Dashboard</button>
         <input className="editor-title" value={title} onChange={e => setTitle(e.target.value)} placeholder="Article title" />
+
         <div className="editor-meta">
           <div>
             <label className="meta-label">Category</label>
@@ -643,14 +732,6 @@ function Editor({ user, draft, categories, tags, onSave, onSubmit, onBack, notif
           </div>
         </div>
 
-        <div className="cover-wrap">
-          <label className="meta-label">Cover Image</label>
-          {coverPreview
-            ? <div><img src={coverPreview} alt="Cover" className="cover-preview" /><button className="cover-remove" onClick={() => { setCoverFile(null); setCoverPreview(null); }}>Remove image</button></div>
-            : <div className="cover-drop"><input type="file" accept="image/*" onChange={handleCover} /><span className="cover-drop-label">Click to upload a cover image</span><span className="cover-drop-sub">JPG, PNG, WEBP — recommended 1200 × 630px</span></div>
-          }
-        </div>
-
         <label className="meta-label" style={{marginBottom:"0.5rem",display:"block"}}>Article Body</label>
         <div className="toolbar">
           <button className="tb" onMouseDown={e=>{e.preventDefault();exec("bold");}}>B</button>
@@ -666,8 +747,11 @@ function Editor({ user, draft, categories, tags, onSave, onSubmit, onBack, notif
           <div className="tb-sep"/>
           <button className="tb" onMouseDown={e=>{e.preventDefault();const u=prompt("URL:");if(u)exec("createLink",u);}}>Link</button>
           <div className="tb-sep"/>
-          <button className="tb" onMouseDown={e=>{e.preventDefault();imageInputRef.current?.click();}}>📷 Image</button>
+          <button className="tb" title="Insert image" onMouseDown={e=>{e.preventDefault();imageInputRef.current?.click();}}>📷 Image</button>
           <input ref={imageInputRef} type="file" accept="image/*" style={{display:"none"}} onChange={handleInlineImage} />
+          <div className="tb-sep"/>
+          <button className="tb" title="2-column layout" onMouseDown={e=>{e.preventDefault();insert2Col();}}>2 Col</button>
+          <button className="tb" title="3-column layout" onMouseDown={e=>{e.preventDefault();insert3Col();}}>3 Col</button>
         </div>
 
         <div
@@ -675,7 +759,7 @@ function Editor({ user, draft, categories, tags, onSave, onSubmit, onBack, notif
           className="body-editor"
           contentEditable
           suppressContentEditableWarning
-          data-ph="Begin writing. Clear, specific, sourced — the Arcwize standard."
+          data-ph="Begin writing. The first image you insert will become the cover image on Wix."
           onInput={e => setBodyText(e.currentTarget.innerText)}
           dangerouslySetInnerHTML={draft?.body && !bodyRef.current ? {__html: draft.body} : undefined}
         />
@@ -724,16 +808,15 @@ export default function App() {
   useEffect(() => {
     if (!user) return;
     loadArticles();
-    const h = { "wix-site-id": WIX_SITE_ID };
     fetch("https://www.wixapis.com/blog/v3/categories?paging.limit=50").then(r=>r.json()).then(d=>{if(d.categories?.length)setCategories(d.categories.map(c=>({id:c.id,label:c.label})));}).catch(()=>{});
     fetch("https://www.wixapis.com/blog/v3/tags?paging.limit=50").then(r=>r.json()).then(d=>{if(d.tags?.length)setTagsData(d.tags.map(t=>({id:t.id,label:t.label})));}).catch(()=>{});
   }, [user]);
 
   const loadArticles = async () => {
     if (!user) return;
-    const isAdmin = user.email === ADMIN_EMAIL;
+    const isAdm = user.email === ADMIN_EMAIL;
     let query = supabase.from("articles").select("*").order("updated_at", { ascending: false });
-    if (!isAdmin) query = query.eq("user_id", user.id);
+    if (!isAdm) query = query.eq("user_id", user.id);
     const { data, error } = await query;
     if (!error && data) setArticles(data);
   };
@@ -741,10 +824,7 @@ export default function App() {
   const isAdmin = user?.email === ADMIN_EMAIL;
   const myArticles = isAdmin ? articles : articles.filter(a => a.user_id === user?.id);
 
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    setArticles([]); setDraft(null); setTab("dashboard");
-  };
+  const signOut = async () => { await supabase.auth.signOut(); setArticles([]); setDraft(null); setTab("dashboard"); };
 
   const startNew = () => {
     setDraft({ id: "new-" + Date.now(), title:"", excerpt:"", category:"", tags:[], body:"", cover_url:null, status:"draft" });
@@ -795,7 +875,7 @@ export default function App() {
           <div className="topbar-greeting">{greeting()}, {firstName(user)} 👋</div>
           <Avatar user={user} />
         </div>
-        {isAdmin  && tab==="dashboard"    && <AdminDashboard articles={articles} categories={categories} />}
+        {isAdmin  && tab==="dashboard" && <AdminDashboard articles={articles} categories={categories} onEdit={d=>{setDraft(d);setTab("editor");}} />}
         {!isAdmin && (tab==="dashboard"||tab==="articles") && <InternDashboard user={user} articles={myArticles} categories={categories} onNew={startNew} onEdit={d=>{setDraft(d);setTab("editor");}} />}
         {!isAdmin && tab==="editor" && draft && <Editor user={user} draft={draft} categories={categories} tags={tags} onSave={handleSave} onSubmit={handleSubmit} onBack={()=>setTab("dashboard")} notify={notify} />}
         {tab==="notifications" && <Notifications notifications={isAdmin?[]:notifications} onRead={markRead} />}
