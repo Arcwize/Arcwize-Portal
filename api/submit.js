@@ -15,11 +15,12 @@ export default async function handler(req, res) {
 
     // Inject memberId into the draftPost
     const payload = {
-      draftPost: {
-        ...incoming.draftPost,
-        memberId: WIX_MEMBER_ID,
-      }
-    };
+  draftPost: {
+    ...incoming.draftPost,
+    memberId: WIX_MEMBER_ID,
+    status: "IN_REVIEW",
+  }
+};
 
     const response = await fetch("https://www.wixapis.com/blog/v3/draft-posts", {
       method: "POST",
