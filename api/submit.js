@@ -16,78 +16,62 @@ export default async function handler(req, res) {
     "wix-site-id": WIX_SITE_ID,
   };
 
-  const importImageToWix = async (imageUrl) => {
+  const importImage = async (url) => {
     try {
-      const importRes = await fetch("https://www.wixapis.com/media/v1/files/import", {
+      const r = await fetch("https://www.wixapis.com/site-media/v1/files/import", {
         method: "POST",
         headers,
-        body: JSON.stringify({
-          url: imageUrl,
-          mimeType: "image/jpeg",
-          displayName: "article-image.jpg",
-          parentFolderId: "media-root",
-        }),
+        body: JSON.stringify({ url, mimeType: "image/jpeg", displayName: "article-image.jpg", parentFolderId: "media-root" }),
       });
-      const importData = await importRes.json();
-      const fileId = importData?.file?.id;
-      if (!fileId) return null;
-
-      // Poll until ready (max 10 seconds)
-      for (let i = 0; i < 10; i++) {
+      const d = await r.json();
+      if (!d?.file?.id) return null;
+      // Poll up to 12 seconds
+      for (let i = 0; i < 12; i++) {
         await new Promise(r => setTimeout(r, 1000));
-        const checkRes = await fetch(`https://www.wixapis.com/media/v1/files/${fileId}`, { headers });
-        const checkData = await checkRes.json();
-        const file = checkData?.file;
-        if (file?.operationStatus === "READY") {
-          // Return the Wix media URL format
-          return {
-            url: file.url,
-            id: file.id,
-            width: file.media?.image?.width || 1200,
-            height: file.media?.image?.height || 630,
-          };
-        }
+        const check = await fetch(`https://www.wixapis.com/site-media/v1/files/${d.file.id}`, { headers });
+        const cd = await check.json();
+        if (cd?.file?.operationStatus === "READY") return cd.file.url;
       }
       return null;
-    } catch {
-      return null;
-    }
+    } catch { return null; }
   };
 
   try {
     const incoming = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
-    const { draftPost, coverImageUrl, inlineImageUrls } = incoming;
+    const { draftPost, inlineImageUrls } = incoming;
 
-    // Import cover image into Wix
-    let coverMediaData = null;
-    if (coverImageUrl) {
-      coverMediaData = await importImageToWix(coverImageUrl);
-    }
-
-    // Import inline images into Wix
-    let wixInlineUrls = {};
-    if (inlineImageUrls && inlineImageUrls.length > 0) {
+    // Import all inline images into Wix
+    const wixUrls = {};
+    if (inlineImageUrls?.length) {
       for (const url of inlineImageUrls) {
-        const wixData = await importImageToWix(url);
-        if (wixData) wixInlineUrls[url] = wixData.url;
+        const wixUrl = await importImage(url);
+        if (wixUrl) wixUrls[url] = wixUrl;
       }
     }
 
-    // Build nodes, replacing inline image URLs with Wix URLs
-    const nodes = draftPost.richContent?.nodes?.map(node => {
-      if (node.type === "IMAGE" && node.imageData?.image?.src?.url) {
-        const original = node.imageData.image.src.url;
-        const wixUrl = wixInlineUrls[original] || original;
-        return {
-          ...node,
-          imageData: {
-            ...node.imageData,
-            image: { src: { url: wixUrl } }
-          }
-        };
+    // Build rich content nodes with IMAGE nodes for each image
+    const nodes = [];
+    const paragraphs = (draftPost.richContent?.nodes || []);
+    
+    // If there are inline images, build proper IMAGE nodes
+    if (Object.keys(wixUrls).length > 0) {
+      // Add text paragraphs
+      if (paragraphs.length > 0) {
+        nodes.push(...paragraphs);
       }
-      return node;
-    }) || [];
+      // Add image nodes for each imported image
+      for (const [original, wixUrl] of Object.entries(wixUrls)) {
+        nodes.push({
+          type: "IMAGE",
+          imageData: {
+            image: { src: { url: wixUrl } },
+            containerData: { width: { size: "CONTENT" }, alignment: "CENTER" }
+          }
+        });
+      }
+    } else {
+      nodes.push(...paragraphs);
+    }
 
     const payload = {
       draftPost: {
@@ -96,39 +80,19 @@ export default async function handler(req, res) {
         excerpt: draftPost.excerpt,
         categoryIds: draftPost.categoryIds,
         tagIds: draftPost.tagIds,
-        richContent: { nodes },
+        richContent: { nodes: nodes.length > 0 ? nodes : paragraphs },
       }
     };
 
-    // Attach cover image using wixMedia format
-    if (coverMediaData) {
-      payload.draftPost.media = {
-        wixMedia: {
-          image: {
-            imageInfo: {
-              url: coverMediaData.url,
-              width: coverMediaData.width,
-              height: coverMediaData.height,
-            }
-          }
-        },
-        displayed: true,
-        custom: true,
-      };
-    }
-
-    const createRes = await fetch("https://www.wixapis.com/blog/v3/draft-posts", {
+    const r = await fetch("https://www.wixapis.com/blog/v3/draft-posts", {
       method: "POST",
       headers,
       body: JSON.stringify(payload),
     });
 
-    const createData = await createRes.json();
-    if (!createRes.ok) {
-      return res.status(createRes.status).json({ error: "Failed to create post", details: createData });
-    }
-
-    return res.status(200).json(createData);
+    const data = await r.json();
+    if (!r.ok) return res.status(r.status).json({ error: "Wix error", details: data });
+    return res.status(200).json(data);
   } catch (error) {
     return res.status(500).json({ error: "Server error", details: error.message });
   }
