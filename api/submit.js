@@ -16,21 +16,90 @@ export default async function handler(req, res) {
     "wix-site-id": WIX_SITE_ID,
   };
 
+  const importImageToWix = async (imageUrl) => {
+    try {
+      const importRes = await fetch("https://www.wixapis.com/site-media/v1/files/import", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({
+          url: imageUrl,
+          mediaType: "IMAGE",
+          displayName: "article-image.jpg",
+        }),
+      });
+      const importData = await importRes.json();
+      const fileId = importData?.file?.id;
+      if (!fileId) return null;
+
+      // Poll until ready (max 10 seconds)
+      for (let i = 0; i < 10; i++) {
+        await new Promise(r => setTimeout(r, 1000));
+        const checkRes = await fetch(`https://www.wixapis.com/site-media/v1/files/${fileId}`, { headers });
+        const checkData = await checkRes.json();
+        if (checkData?.file?.operationStatus === "READY") {
+          return checkData.file.url;
+        }
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  };
+
   try {
     const incoming = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
+    const { draftPost, coverImageUrl, inlineImageUrls } = incoming;
+
+    // Import cover image into Wix if provided
+    let wixCoverUrl = null;
+    if (coverImageUrl) {
+      wixCoverUrl = await importImageToWix(coverImageUrl);
+    }
+
+    // Import inline images into Wix
+    let wixInlineUrls = {};
+    if (inlineImageUrls && inlineImageUrls.length > 0) {
+      for (const url of inlineImageUrls) {
+        const wixUrl = await importImageToWix(url);
+        if (wixUrl) wixInlineUrls[url] = wixUrl;
+      }
+    }
+
+    // Build rich content nodes — replace inline image src with Wix URLs
+    const nodes = draftPost.richContent?.nodes?.map(node => {
+      if (node.type === "IMAGE" && node.imageData?.image?.src?.url) {
+        const original = node.imageData.image.src.url;
+        return {
+          ...node,
+          imageData: {
+            ...node.imageData,
+            image: {
+              src: { url: wixInlineUrls[original] || original }
+            }
+          }
+        };
+      }
+      return node;
+    }) || [];
 
     const payload = {
       draftPost: {
         memberId: WIX_MEMBER_ID,
-        title: incoming.draftPost.title,
-        excerpt: incoming.draftPost.excerpt,
-        categoryIds: incoming.draftPost.categoryIds,
-        tagIds: incoming.draftPost.tagIds,
-        richContent: incoming.draftPost.richContent,
+        title: draftPost.title,
+        excerpt: draftPost.excerpt,
+        categoryIds: draftPost.categoryIds,
+        tagIds: draftPost.tagIds,
+        richContent: { nodes },
       }
     };
 
-    // Step 1 — create the draft
+    // Attach cover image
+    if (wixCoverUrl) {
+      payload.draftPost.coverMedia = {
+        image: { src: { url: wixCoverUrl } }
+      };
+    }
+
     const createRes = await fetch("https://www.wixapis.com/blog/v3/draft-posts", {
       method: "POST",
       headers,
@@ -39,23 +108,10 @@ export default async function handler(req, res) {
 
     const createData = await createRes.json();
     if (!createRes.ok) {
-      return res.status(createRes.status).json({ error: "Failed to create draft", details: createData });
+      return res.status(createRes.status).json({ error: "Failed to create post", details: createData });
     }
 
-    const postId = createData.draftPost.id;
-
-    // Step 2 — submit for review
-    const submitRes = await fetch(`https://www.wixapis.com/blog/v3/draft-posts/${postId}/submit`, {
-      method: "POST",
-      headers,
-    });
-
-    const submitData = await submitRes.json();
-    if (!submitRes.ok) {
-      return res.status(submitRes.status).json({ error: "Created but failed to submit for review", details: submitData });
-    }
-
-    return res.status(200).json(submitData);
+    return res.status(200).json({ ...createData, wixInlineUrls });
   } catch (error) {
     return res.status(500).json({ error: "Server error", details: error.message });
   }
