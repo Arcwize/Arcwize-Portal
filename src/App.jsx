@@ -557,14 +557,42 @@ function Editor({ user, draft, categories, tags, onSave, onSubmit, onBack, notif
     try {
       const saved = await saveToSupabase("submitted");
 
+      // Extract inline images from body HTML
       const bodyHTML = bodyRef.current?.innerHTML || bodyText;
-      const plainParagraphs = (bodyRef.current?.innerText || bodyText).trim().split(/\n\n+/).filter(Boolean);
-      const nodes = plainParagraphs.map(p => ({
-        type: "PARAGRAPH",
-        nodes: [{ type: "TEXT", textData: { text: p.replace(/<[^>]+>/g, "") } }]
-      }));
+      const imgMatches = [...bodyHTML.matchAll(/<img[^>]+src="([^"]+)"/g)];
+      const inlineImageUrls = imgMatches.map(m => m[1]).filter(u => u.startsWith("http"));
+
+      // Build rich content nodes - text paragraphs + image nodes
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(bodyHTML, "text/html");
+      const nodes = [];
+
+      doc.body.childNodes.forEach(node => {
+        if (node.nodeName === "IMG") {
+          const src = node.getAttribute("src");
+          if (src) {
+            nodes.push({
+              type: "IMAGE",
+              imageData: {
+                image: { src: { url: src } },
+                containerData: { width: { size: "CONTENT" } }
+              }
+            });
+          }
+        } else {
+          const text = node.textContent?.trim();
+          if (text) {
+            nodes.push({
+              type: "PARAGRAPH",
+              nodes: [{ type: "TEXT", textData: { text } }]
+            });
+          }
+        }
+      });
 
       const wixPayload = {
+        coverImageUrl: saved.cover_url || null,
+        inlineImageUrls,
         draftPost: {
           title: title.trim(),
           excerpt: excerpt.trim(),
@@ -574,15 +602,7 @@ function Editor({ user, draft, categories, tags, onSave, onSubmit, onBack, notif
         }
       };
 
-      if (saved.cover_url) {
-        wixPayload.draftPost.media = {
-          displayed: true,
-          custom: false,
-          wixMedia: { image: { imageInfo: { url: saved.cover_url } } }
-        };
-      }
-
-      const res = await fetch("/api/submit", {
+      await fetch("/api/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(wixPayload),
