@@ -22,11 +22,11 @@ export default async function handler(req, res) {
         method: "POST",
         headers,
         body: JSON.stringify({
-  url: imageUrl,
-  mimeType: "image/jpeg",
-  displayName: "article-image.jpg",
-  parentFolderId: "media-root",
-}),
+          url: imageUrl,
+          mimeType: "image/jpeg",
+          displayName: "article-image.jpg",
+          parentFolderId: "media-root",
+        }),
       });
       const importData = await importRes.json();
       const fileId = importData?.file?.id;
@@ -35,10 +35,17 @@ export default async function handler(req, res) {
       // Poll until ready (max 10 seconds)
       for (let i = 0; i < 10; i++) {
         await new Promise(r => setTimeout(r, 1000));
-        const checkRes = await fetch(`https://www.wixapis.com/site-media/v1/files/${fileId}`, { headers });
+        const checkRes = await fetch(`https://www.wixapis.com/media/v1/files/${fileId}`, { headers });
         const checkData = await checkRes.json();
-        if (checkData?.file?.operationStatus === "READY") {
-          return checkData.file.url;
+        const file = checkData?.file;
+        if (file?.operationStatus === "READY") {
+          // Return the Wix media URL format
+          return {
+            url: file.url,
+            id: file.id,
+            width: file.media?.image?.width || 1200,
+            height: file.media?.image?.height || 630,
+          };
         }
       }
       return null;
@@ -51,32 +58,31 @@ export default async function handler(req, res) {
     const incoming = typeof req.body === "string" ? JSON.parse(req.body) : req.body;
     const { draftPost, coverImageUrl, inlineImageUrls } = incoming;
 
-    // Import cover image into Wix if provided
-    let wixCoverUrl = null;
+    // Import cover image into Wix
+    let coverMediaData = null;
     if (coverImageUrl) {
-      wixCoverUrl = await importImageToWix(coverImageUrl);
+      coverMediaData = await importImageToWix(coverImageUrl);
     }
 
     // Import inline images into Wix
     let wixInlineUrls = {};
     if (inlineImageUrls && inlineImageUrls.length > 0) {
       for (const url of inlineImageUrls) {
-        const wixUrl = await importImageToWix(url);
-        if (wixUrl) wixInlineUrls[url] = wixUrl;
+        const wixData = await importImageToWix(url);
+        if (wixData) wixInlineUrls[url] = wixData.url;
       }
     }
 
-    // Build rich content nodes — replace inline image src with Wix URLs
+    // Build nodes, replacing inline image URLs with Wix URLs
     const nodes = draftPost.richContent?.nodes?.map(node => {
       if (node.type === "IMAGE" && node.imageData?.image?.src?.url) {
         const original = node.imageData.image.src.url;
+        const wixUrl = wixInlineUrls[original] || original;
         return {
           ...node,
           imageData: {
             ...node.imageData,
-            image: {
-              src: { url: wixInlineUrls[original] || original }
-            }
+            image: { src: { url: wixUrl } }
           }
         };
       }
@@ -94,16 +100,22 @@ export default async function handler(req, res) {
       }
     };
 
-    // Attach cover image
-    if (wixCoverUrl) {
-  payload.draftPost.heroImage = {
-    image: {
-      src: {
-        url: wixCoverUrl
-      }
+    // Attach cover image using wixMedia format
+    if (coverMediaData) {
+      payload.draftPost.media = {
+        wixMedia: {
+          image: {
+            imageInfo: {
+              url: coverMediaData.url,
+              width: coverMediaData.width,
+              height: coverMediaData.height,
+            }
+          }
+        },
+        displayed: true,
+        custom: true,
+      };
     }
-  };
-}
 
     const createRes = await fetch("https://www.wixapis.com/blog/v3/draft-posts", {
       method: "POST",
@@ -116,7 +128,7 @@ export default async function handler(req, res) {
       return res.status(createRes.status).json({ error: "Failed to create post", details: createData });
     }
 
-    return res.status(200).json({ ...createData, wixInlineUrls });
+    return res.status(200).json(createData);
   } catch (error) {
     return res.status(500).json({ error: "Server error", details: error.message });
   }
