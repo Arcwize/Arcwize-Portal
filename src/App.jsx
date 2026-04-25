@@ -1537,9 +1537,9 @@ function Editor({ user, draft, categories, tags, onSave, onSubmit, onBack }) {
       const nodes = bodyText.trim().split(/\n\n+/).filter(Boolean).map(p => ({
         type: "PARAGRAPH", nodes: [{ type: "TEXT", textData: { text: p.replace(/<[^>]+>/g,"") } }]
       }));
-      const res = await fetch("https://www.wixapis.com/blog/v3/draft-posts", {
+      const res = await fetch("/api/submit", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": WIX_API_KEY, "wix-site-id": WIX_SITE_ID },
+       headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ draftPost: { title: title.trim(), excerpt: excerpt.trim(), categoryIds: [category], tagIds: selectedTags, richContent: { nodes }, status: "IN_REVIEW" } })
       });
       if (!res.ok) throw new Error();
